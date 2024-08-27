@@ -4,7 +4,7 @@ import employeeRoutes from './routes/employeeRoutes';
 import salaryDetailsRouter from './routes/salaryDetailsRouter';
 import salarySlipRoutes from './routes/salarySlipRoutes';
 import leaveManagementRoutes from './routes/leaveManagementRoutes';
-import socialInsuranceCalculationRoutes from './routes/socialInsuranceCalculationRoutes';
+import socialInsuranceCalculationRoutes from './routes/SocialInsuranceCalculationRoutes';
 import monthlyRemunerationRoutes from './routes/monthlyRemunerationRoutes';
 import dotenv from 'dotenv';
 import cors from 'cors';

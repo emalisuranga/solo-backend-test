@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../config/prismaClient';
 
 /**
  * Fetch salary slip details by employee ID and payment details ID.

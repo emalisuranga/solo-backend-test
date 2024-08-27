@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/prismaClient';
 import { AdjustLeaveRequestParams } from '../types/leaveManagement';
 import { NotFoundError } from '../errors/customError';
-
-const prisma = new PrismaClient();
 
 /**
  * Find employee by ID.
