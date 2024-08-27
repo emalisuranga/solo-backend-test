@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PersonalInfo {
+  id                 Int              @id @default(autoincrement())
+  firstName          String
+  lastName           String
+  furiganaFirstName  String?
+  furiganaLastName   String?
+  phone              String
+  address            String
+  dateOfBirth        DateTime
+  joinDate           DateTime
+  department         String
+  isDeleted          Boolean          @default(false)
+  createdAt          DateTime         @default(now()) @updatedAt
+  updatedAt          DateTime         @default(now()) @updatedAt
+  spouseDeduction    Int              @default(0)
+  dependentDeduction Int              @default(0)
+  bankDetails        BankDetails?
+  salaryDetails      SalaryDetails?
+  paymentDetails     PaymentDetails[]
+  paidHolidays       PaidHolidays[]
+  LeaveRequests      LeaveRequests[]
+}
+
+model BankDetails {
+  id                Int          @id @default(autoincrement())
+  bankAccountNumber String
+  bankName          String
+  branchCode        String
+  employee          PersonalInfo @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId        Int          @unique
+}
+
+model SalaryDetails {
+  id                  Int          @id @default(autoincrement())
+  basicSalary         Float
+  transportationCosts Float
+  familyAllowance     Float
+  attendanceAllowance Float
+  leaveAllowance      Float
+  specialAllowance    Float
+  employee            PersonalInfo @relation(fields: [employeeId], references: [id])
+  employeeId          Int          @unique
+}
+
+model PaymentDetails {
+  id              Int          @id @default(autoincrement())
+  employee        PersonalInfo @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId      Int
+  month           Int
+  year            Int
+  slipName        String       @default("")
+  createdAt       DateTime     @default(now())
+  workDetails     WorkDetails?
+  earnings        Earnings?
+  deductions      Deductions?
+  totalEarnings   Float
+  totalDeductions Float
+  netSalary       Float
+  remarks         String?
+
+  @@unique([employeeId, month, year])
+  @@index([month, year])
+}
+
+model WorkDetails {
+  id                           Int            @id @default(autoincrement())
+  paymentDetails               PaymentDetails @relation(fields: [paymentDetailsId], references: [id], onDelete: Cascade)
+  paymentDetailsId             Int            @unique
+  scheduledWorkingDays         Int
+  numberOfWorkingDays          Int
+  numberOfPaidHolidays         Int
+  remainingPaidVacationDays    Int
+  overtime                     Float
+  timeLate                     Float
+  timeLeavingEarly             Float
+  numberOfNonPaidLeave        Int            @default(0)
+  numberOfHolidayAllowanceDays Int            @default(0)
+}
+
+model Earnings {
+  id                  Int            @id @default(autoincrement())
+  paymentDetails      PaymentDetails @relation(fields: [paymentDetailsId], references: [id], onDelete: Cascade)
+  paymentDetailsId    Int            @unique
+  basicSalary         Float
+  overtimePay         Float
+  transportationCosts Float
+  attendanceAllowance Float
+  familyAllowance     Float
+  leaveAllowance      Float
+  specialAllowance    Float
+  holidayAllowance    Float          @default(0)
+}
+
+model Deductions {
+  id                       Int            @id @default(autoincrement())
+  paymentDetails           PaymentDetails @relation(fields: [paymentDetailsId], references: [id], onDelete: Cascade)
+  paymentDetailsId         Int            @unique
+  healthInsurance          Float
+  employeePensionInsurance Float
+  employmentInsurance      Float
+  longTermCareInsurance    Float
+  socialInsurance          Float
+  incomeTax                Float
+  residentTax              Float
+  advancePayment           Float
+  yearEndAdjustment        Float
+  nonEmploymentDeduction   Float          @default(0)
+  refundAmount             Float          @default(0)
+}
+
+model PaidHolidays {
+  id             Int          @id @default(autoincrement())
+  employee       PersonalInfo @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId     Int
+  totalLeave     Int
+  usedLeave      Int
+  remainingLeave Int
+  leaveStart     DateTime
+  leaveEnd       DateTime
+  lastUpdated    DateTime     @default(now()) @updatedAt
+  isValid        Boolean      @default(true)
+}
+
+model LeaveRequests {
+  id           Int          @id @default(autoincrement())
+  employee     PersonalInfo @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId   Int
+  initialDays  Int
+  adjustedDays Int
+  totalDays    Int
+  requestDate  DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+  salaryMonth  Int
+  salaryYear   Int
+}
+
+model MonthlyRemuneration {
+  id                      Int      @id @default(autoincrement())
+  monthlySalary           Int
+  remunerationStartSalary Int
+  remunerationEndSalary   Int
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model SocialInsuranceCalculation {
+  id                                 Int      @id @default(autoincrement())
+  longTermInsurancePercentage        Float
+  healthInsurancePercentage          Float
+  employeePensionPercentage          Float
+  pensionStartSalary                 Int
+  pensionStartMonthlySalary          Int      @default(0)
+  pensionEndSalary                   Int
+  pensionEndMonthlySalary            Int      @default(0)
+  regularEmployeeInsurancePercentage Float
+  specialEmployeeInsurancePercentage Float
+  createdAt                          DateTime @default(now())
+  updatedAt                          DateTime @updatedAt
+}
+
+model IncomeTaxDeduction {
+  id                 Int      @id @default(autoincrement())
+  spouseDeduction    Int
+  dependentDeduction Int
+  basicDeduction     Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String
+  entity      String
+  entityId    String
+  performedBy Int      @default(1)
+  performedAt DateTime @default(now())
+  details     String?
+}
