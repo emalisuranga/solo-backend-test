@@ -3,7 +3,7 @@ import { fetchSocialInsuranceCalculationDetailsHandler, addSocialInsuranceCalcul
 
 const router = Router();    
 
-router.get('/:socialInsuranceCalculationId', fetchSocialInsuranceCalculationDetailsHandler);
+router.get('/', fetchSocialInsuranceCalculationDetailsHandler);
 router.post('/', addSocialInsuranceCalculationHandler);
 router.put('/:socialInsuranceCalculationId', updateSocialInsuranceCalculationHandler);
 
