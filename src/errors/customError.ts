@@ -25,3 +25,9 @@ export class InternalServerError extends CustomError {
         super(message, 500);
     }
 }
+
+export class ConflictError extends CustomError {
+    constructor(message: string) {
+        super(message, 409); // 409 Conflict
+    }
+}

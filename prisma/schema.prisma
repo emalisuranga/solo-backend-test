@@ -28,6 +28,8 @@ model PersonalInfo {
   paymentDetails     PaymentDetails[]
   paidHolidays       PaidHolidays[]
   LeaveRequests      LeaveRequests[]
+
+  @@unique([firstName, lastName, dateOfBirth, phone, address])
 }
 
 model BankDetails {
