@@ -3,7 +3,7 @@ import { SocialInsuranceCalculation } from '../types/socialInsuranceCalculation'
 export const defaultData: SocialInsuranceCalculation = {
   longTermInsurancePercentage: 0.1158,
   healthInsurancePercentage: 0.0998,
-  employeePensionPercentage: 0.186,
+  employeePensionPercentage: 0.183,
   pensionStartSalary: 93000,
   pensionEndSalary: 665000,
   regularEmployeeInsurancePercentage: 0.006,
