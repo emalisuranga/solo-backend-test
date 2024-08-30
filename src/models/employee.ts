@@ -87,6 +87,8 @@ export const getEmployeeById = async (id: number) => {
       dateOfBirth: true,
       joinDate: true,
       department: true,
+      spouseDeduction: true,
+      dependentDeduction: true,
       bankDetails: {
         select: {
           bankAccountNumber: true,
