@@ -17,6 +17,7 @@ export const createEmployee = async (employee: Employee) => {
       dateOfBirth: new Date(employee.dateOfBirth),
       joinDate: new Date(employee.joinDate),
       department: employee.department,
+      jobTitle: employee.jobTitle,
       spouseDeduction: parseFloat(employee.spouseDeduction as unknown as string),
       dependentDeduction: parseFloat(employee.dependentDeduction as unknown as string),
       isDeleted: false,
@@ -87,6 +88,7 @@ export const getEmployeeById = async (id: number) => {
       dateOfBirth: true,
       joinDate: true,
       department: true,
+      jobTitle: true,
       spouseDeduction: true,
       dependentDeduction: true,
       bankDetails: {
@@ -155,6 +157,7 @@ export const updateEmployee = async (id: number, employee: Employee) => {
       dateOfBirth: new Date(employee.dateOfBirth),
       joinDate: new Date(employee.joinDate),
       department: employee.department,
+      jobTitle: employee.jobTitle,
       spouseDeduction: parseFloat(employee.spouseDeduction as unknown as string),
       dependentDeduction: parseFloat(employee.dependentDeduction as unknown as string),
       bankDetails: {

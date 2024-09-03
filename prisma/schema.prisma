@@ -18,6 +18,7 @@ model PersonalInfo {
   dateOfBirth        DateTime
   joinDate           DateTime
   department         String
+  jobTitle           String           @default("")
   isDeleted          Boolean          @default(false)
   createdAt          DateTime         @default(now()) @updatedAt
   updatedAt          DateTime         @default(now()) @updatedAt
@@ -84,7 +85,7 @@ model WorkDetails {
   overtime                     Float
   timeLate                     Float
   timeLeavingEarly             Float
-  numberOfNonPaidLeave        Int            @default(0)
+  numberOfNonPaidLeave         Int            @default(0)
   numberOfHolidayAllowanceDays Int            @default(0)
 }
 

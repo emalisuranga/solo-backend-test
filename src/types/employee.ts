@@ -10,6 +10,7 @@ export interface Employee {
     dateOfBirth: string | Date;
     joinDate: string | Date;
     department: string;
+    jobTitle: string;
     bankAccountNumber: string;
     bankName: string;
     branchCode: string;
