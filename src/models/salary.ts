@@ -2,7 +2,6 @@ import prisma from '../config/prismaClient';
 import { Salary } from '../types/salary';
 import { createInitialLeaveRequest, adjustLeaveRequest } from './leaveManagement';
 import { NotFoundError, BadRequestError } from '../errors/customError';
-import { calculateSalaryDetails } from '../utils/calculateSalaryDetails';
 import { logAudit } from '../utils/auditLog';
 import { calculateTotalEarnings, calculateTotalDeductions, convertToNegative, calculateOvertimePayment } from '../helpers/salaryCalculations';
 
@@ -122,6 +121,7 @@ export const getSalaryDetailsByMonth = async (month: number, year: number) => {
             employee: {
                 select: {
                     id: true,
+                    employeeNumber: true,
                     firstName: true,
                     lastName: true,
                 },
@@ -145,6 +145,7 @@ export const getSalaryDetailsByPaymentId = async (paymentId: number) => {
             employee: {
                 select: {
                     id: true,
+                    employeeNumber: true,
                     firstName: true,
                     lastName: true,
                     dateOfBirth: true,
@@ -171,7 +172,6 @@ export const updateSalaryDetails = async (id: number, salary: Salary) => {
     const existingSalary = await prisma.paymentDetails.findUnique({
         where: { id },
     });
-    console.log(existingSalary);
 
     if (!existingSalary) {
         throw new NotFoundError(`Salary details with ID ${id} do not exist.`);
