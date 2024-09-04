@@ -9,6 +9,7 @@ datasource db {
 
 model PersonalInfo {
   id                 Int              @id @default(autoincrement())
+  employeeNumber     String           @unique
   firstName          String
   lastName           String
   furiganaFirstName  String?
@@ -30,7 +31,7 @@ model PersonalInfo {
   paidHolidays       PaidHolidays[]
   LeaveRequests      LeaveRequests[]
 
-  @@unique([firstName, lastName, dateOfBirth, phone, address])
+  @@unique([employeeNumber, firstName, lastName, phone, address])
 }
 
 model BankDetails {
