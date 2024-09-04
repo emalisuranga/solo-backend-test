@@ -108,7 +108,7 @@ export const addSalaryDetails = async (salary: Salary) => {
  * @returns The salary details.
  */
 export const getSalaryDetailsByMonth = async (month: number, year: number) => {
-    return await prisma.paymentDetails.findMany({
+    const salaryDetails = await prisma.paymentDetails.findMany({
         where: {
             month,
             year,
@@ -128,6 +128,13 @@ export const getSalaryDetailsByMonth = async (month: number, year: number) => {
             },
         },
     });
+    salaryDetails.sort((a, b) => {
+        const numA = a.employee?.employeeNumber ? Number(a.employee.employeeNumber) : 0;
+        const numB = b.employee?.employeeNumber ? Number(b.employee.employeeNumber) : 0;
+        return numA - numB;
+      });
+
+    return salaryDetails;
 };
 
 /**

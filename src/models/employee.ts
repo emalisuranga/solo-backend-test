@@ -68,11 +68,9 @@ export const getAllEmployees = async () => {
           specialAllowance: true,
         },
       },
-    },
-    orderBy: {
-      employeeNumber: 'asc',
-    },
+    }
   });
+  result.sort((a, b) => Number(a.employeeNumber) - Number(b.employeeNumber));
   return result;
 };
 
@@ -222,10 +220,8 @@ export const getEmployeeNamesAndIds = async () => {
       employeeNumber: true,
       firstName: true,
       lastName: true,
-    },
-    orderBy: {
-      employeeNumber: 'asc',
-    },
+    }
   });
+  employees.sort((a, b) => Number(a.employeeNumber) - Number(b.employeeNumber));
   return employees;
 };
