@@ -2,7 +2,6 @@ import prisma from '../config/prismaClient';
 import { Salary } from '../types/salary';
 import { createInitialLeaveRequest, adjustLeaveRequest } from './leaveManagement';
 import { NotFoundError, BadRequestError } from '../errors/customError';
-import { calculateSalaryDetails } from '../utils/calculateSalaryDetails';
 import { logAudit } from '../utils/auditLog';
 import { calculateTotalEarnings, calculateTotalDeductions, convertToNegative, calculateOvertimePayment } from '../helpers/salaryCalculations';
 
@@ -109,7 +108,7 @@ export const addSalaryDetails = async (salary: Salary) => {
  * @returns The salary details.
  */
 export const getSalaryDetailsByMonth = async (month: number, year: number) => {
-    return await prisma.paymentDetails.findMany({
+    const salaryDetails = await prisma.paymentDetails.findMany({
         where: {
             month,
             year,
@@ -122,12 +121,20 @@ export const getSalaryDetailsByMonth = async (month: number, year: number) => {
             employee: {
                 select: {
                     id: true,
+                    employeeNumber: true,
                     firstName: true,
                     lastName: true,
                 },
             },
         },
     });
+    salaryDetails.sort((a, b) => {
+        const numA = a.employee?.employeeNumber ? Number(a.employee.employeeNumber) : 0;
+        const numB = b.employee?.employeeNumber ? Number(b.employee.employeeNumber) : 0;
+        return numA - numB;
+      });
+
+    return salaryDetails;
 };
 
 /**
@@ -145,6 +152,7 @@ export const getSalaryDetailsByPaymentId = async (paymentId: number) => {
             employee: {
                 select: {
                     id: true,
+                    employeeNumber: true,
                     firstName: true,
                     lastName: true,
                     dateOfBirth: true,
@@ -171,7 +179,6 @@ export const updateSalaryDetails = async (id: number, salary: Salary) => {
     const existingSalary = await prisma.paymentDetails.findUnique({
         where: { id },
     });
-    console.log(existingSalary);
 
     if (!existingSalary) {
         throw new NotFoundError(`Salary details with ID ${id} do not exist.`);

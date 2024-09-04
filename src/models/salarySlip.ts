@@ -12,6 +12,7 @@ export const getSalarySlipDetails = async (employeeId: number, paymentDetailsId:
     include: {
       employee: {
         select: {
+          employeeNumber: true,
           firstName: true,
           lastName: true,
           department: true,

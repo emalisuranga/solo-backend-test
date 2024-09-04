@@ -8,6 +8,7 @@ import { checkRelatedRecordsExist, updatePaidHolidaysIfNecessary } from '../help
 export const createEmployee = async (employee: Employee) => {
   const result = await prisma.personalInfo.create({
     data: {
+      employeeNumber: employee.employeeNumber,
       firstName: employee.firstName,
       lastName: employee.lastName,
       furiganaFirstName: employee.furiganaFirstName,
@@ -51,6 +52,7 @@ export const getAllEmployees = async () => {
     where: { isDeleted: false },
     select: {
       id: true,
+      employeeNumber: true,
       firstName: true,
       lastName: true,
       phone: true,
@@ -66,11 +68,9 @@ export const getAllEmployees = async () => {
           specialAllowance: true,
         },
       },
-    },
-    orderBy: {
-      id: 'asc',
-    },
+    }
   });
+  result.sort((a, b) => Number(a.employeeNumber) - Number(b.employeeNumber));
   return result;
 };
 
@@ -79,6 +79,7 @@ export const getEmployeeById = async (id: number) => {
     where: { id, isDeleted: false },
     select: {
       id: true,
+      employeeNumber: true,
       firstName: true,
       lastName: true,
       furiganaFirstName: true,
@@ -148,6 +149,7 @@ export const updateEmployee = async (id: number, employee: Employee) => {
   const result = await prisma.personalInfo.update({
     where: { id },
     data: {
+      employeeNumber: employee.employeeNumber,
       firstName: employee.firstName,
       lastName: employee.lastName,
       furiganaFirstName: employee.furiganaFirstName,
@@ -215,12 +217,11 @@ export const getEmployeeNamesAndIds = async () => {
     where: { isDeleted: false },
     select: {
       id: true,
+      employeeNumber: true,
       firstName: true,
       lastName: true,
-    },
-    orderBy: {
-      id: 'asc',
-    },
+    }
   });
+  employees.sort((a, b) => Number(a.employeeNumber) - Number(b.employeeNumber));
   return employees;
 };
