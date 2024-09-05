@@ -3,7 +3,7 @@ import { Salary } from '../types/salary';
 import { createInitialLeaveRequest, adjustLeaveRequest } from './leaveManagement';
 import { NotFoundError, BadRequestError } from '../errors/customError';
 import { logAudit } from '../utils/auditLog';
-import { calculateTotalEarnings, calculateTotalDeductions, convertToNegative, calculateOvertimePayment } from '../helpers/salaryCalculations';
+import { calculateTotalEarnings, calculateTotalDeductions, convertToNegative } from '../helpers/salaryCalculations';
 
 /**
  * Add salary details for an employee.

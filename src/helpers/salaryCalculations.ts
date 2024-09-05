@@ -49,11 +49,11 @@ export const calculateTotalDeductions = (
  * @param basicSalary - The basic salary.
  * @returns The overtime payment.
  */
-export const calculateOvertimePayment = (workDetails: Salary['workDetails'], basicSalary: number): number => {
-    const { scheduledWorkingDays, overtime } = workDetails;
-    const calculatedValue = (((basicSalary / scheduledWorkingDays) / 8) * 1.25) * overtime;
-    return Math.floor(calculatedValue) + (calculatedValue % 1 !== 0 ? 1 : 0);
-};
+// export const calculateOvertimePayment = (workDetails: Salary['workDetails'], basicSalary: number): number => {
+//     const { scheduledWorkingDays, overtime } = workDetails;
+//     const calculatedValue = (((basicSalary / scheduledWorkingDays) / 8) * 1.25) * overtime;
+//     return Math.floor(calculatedValue) + (calculatedValue % 1 !== 0 ? 1 : 0);
+// };
 
 /**
  * Calculate social insurance.
@@ -92,7 +92,6 @@ export const checkEarningsMatch = async (currentEarnings: number, paymentId: num
   };
 
   export const applyCalculatedDetailsToSalary = (salary: Salary, calculatedDetails: any) => {
-    salary.earnings.overtimePay = calculatedDetails.overtimePayment;
     salary.deductions.employmentInsurance = calculatedDetails.employmentInsurance;
     salary.deductions.socialInsurance = calculatedDetails.socialInsurance;
     salary.deductions.incomeTax = calculatedDetails.incomeTax;

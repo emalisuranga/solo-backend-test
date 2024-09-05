@@ -6,7 +6,6 @@ import { calculateInsuranceDeductions } from './insuranceCalculations';
 import {
     calculateTotalEarnings,
     calculateTotalDeductions,
-    calculateOvertimePayment,
     calculateSocialInsurance,
     convertToNegative,
     checkEarningsMatch
@@ -14,8 +13,7 @@ import {
 
 export const calculateSalaryDetails = async (salary: Salary) => {
     const dateOfBirthISO = formatToISOString(salary.dateOfBirth);
-    const overtimePayment = calculateOvertimePayment(salary.workDetails, salary.earnings.basicSalary);
-    const totalEarnings = calculateTotalEarnings({ ...salary.earnings, overtimePay: overtimePayment }, salary.deductions.nonEmploymentDeduction);
+    const totalEarnings = calculateTotalEarnings(salary.earnings , salary.deductions.nonEmploymentDeduction);
 
     // Check if earnings match existing records
     if (!await checkEarningsMatch(totalEarnings, salary.id)) {
