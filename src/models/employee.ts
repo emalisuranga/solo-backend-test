@@ -205,11 +205,23 @@ export const deleteEmployee = async (id: number) => {
 };
 
 export const softDeleteEmployee = async (id: number) => {
-  const employee = await prisma.personalInfo.update({
+  const employee = await prisma.personalInfo.findUnique({
     where: { id },
-    data: { isDeleted: true },
   });
-  return employee;
+
+  if (!employee) {
+    throw new Error("Employee not found.");
+  }
+
+  const updatedEmployee = await prisma.personalInfo.update({
+    where: { id },
+    data: {
+      isDeleted: true,
+      employeeNumber: employee.employeeNumber + '_deleted', 
+    },
+  });
+
+  return updatedEmployee;
 };
 
 export const getEmployeeNamesAndIds = async () => {
