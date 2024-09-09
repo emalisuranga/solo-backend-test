@@ -205,23 +205,40 @@ export const deleteEmployee = async (id: number) => {
 };
 
 export const softDeleteEmployee = async (id: number) => {
-  const employee = await prisma.personalInfo.findUnique({
-    where: { id },
+  return prisma.$transaction(async (transaction) => {
+    const employeeData = await transaction.personalInfo.findFirst({
+      where: {
+        id,
+        OR: [
+          { isDeleted: false }, 
+          { employeeNumber: { endsWith: '_deleted' } } 
+        ],
+      },
+    });
+
+    if (!employeeData || employeeData.isDeleted) {
+      throw new Error("Employee not found or already deleted.");
+    }
+
+    const haveDeletedEmployees = await transaction.personalInfo.findFirst({
+      where: { employeeNumber: employeeData.employeeNumber + '_deleted' },
+    });
+
+    if (haveDeletedEmployees) {
+      await deleteEmployee(haveDeletedEmployees.id);
+    }
+
+    // Soft-delete the current employee by updating the record
+    const updatedEmployee = await transaction.personalInfo.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+        employeeNumber: employeeData.employeeNumber + '_deleted',
+      },
+    });
+
+    return updatedEmployee;
   });
-
-  if (!employee) {
-    throw new Error("Employee not found.");
-  }
-
-  const updatedEmployee = await prisma.personalInfo.update({
-    where: { id },
-    data: {
-      isDeleted: true,
-      employeeNumber: employee.employeeNumber + '_deleted', 
-    },
-  });
-
-  return updatedEmployee;
 };
 
 export const getEmployeeNamesAndIds = async () => {
