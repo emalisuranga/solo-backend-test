@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import {
     createEmployee,
     getAllEmployees,
@@ -53,6 +54,15 @@ export const updateEmployeeHandler = async (req: Request, res: Response) => {
         sendSuccessResponse(res, result, 'Employee updated successfully');
     } catch (error) {
         console.error('Error updating employee:', error);
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === 'P2002') {
+              // Throw a ConflictError with a custom message and code
+              res.status(409).json({
+                message: `The employee number is already in use.`,
+                code: 'EMPLOYEE_NUMBER_DUPLICATE'
+              });
+            }
+          }
         handleErrorResponse(error, res);
     }
 };
