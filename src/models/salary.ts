@@ -143,29 +143,35 @@ export const getSalaryDetailsByMonth = async (month: number, year: number) => {
  * @returns The salary details.
  */
 export const getSalaryDetailsByPaymentId = async (paymentId: number) => {
-    const salaryDetails = await prisma.paymentDetails.findUnique({
-        where: { id: paymentId },
-        include: {
-            workDetails: true,
-            earnings: true,
-            deductions: true,
-            employee: {
-                select: {
-                    id: true,
-                    employeeNumber: true,
-                    firstName: true,
-                    lastName: true,
-                    dateOfBirth: true,
+    try {
+        const salaryDetails = await prisma.paymentDetails.findUnique({
+            where: { id: paymentId },
+            include: {
+                workDetails: true, 
+                earnings: true,    
+                deductions: true,  
+                employee: {
+                    select: {
+                        id: true,
+                        employeeNumber: true,
+                        firstName: true,
+                        lastName: true,
+                        dateOfBirth: true,
+                    },
                 },
             },
-        },
-    });
+        });
 
-    if (!salaryDetails) {
-        throw new NotFoundError(`Salary details with ID ${paymentId} do not exist.`);
+        if (!salaryDetails) {
+            console.error(`Salary details with ID ${paymentId} not found.`);
+            return null; 
+        }
+
+        return salaryDetails;
+    } catch (error) {
+        console.error('Error fetching salary details:', error);
+        return null; 
     }
-
-    return salaryDetails;
 };
 
 /**
