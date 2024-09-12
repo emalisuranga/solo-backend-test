@@ -1,7 +1,7 @@
 import { getMonthlyRemunerationDetails } from '../models/monthlyRemuneration';
 import { getSocialInsuranceCalculationDetails } from '../models/socialInsuranceCalculation';
 import { calculateHealthInsurance, calculateEmployeePensionInsurance, calculateLongTermCareInsurance, calculateEmploymentInsurance } from '../helpers/insuranceCalculations';
-import { calculateAge } from '../helpers/ageCalculation';
+import { isEligibleForLongTermCareInsurance } from '../helpers/ageCalculation';
 import { cache } from '../cache/cache';
 import { InsuranceDeductions } from '../types/InsuranceCalculationInterfaces';
 
@@ -46,7 +46,7 @@ export const calculateInsuranceDeductions = async (totalEarnings: number, dateOf
   let healthInsurance = 0;
   let employeePensionInsurance = 0;
   let longTermCareInsurance = 0;
-  const age = calculateAge(dateOfBirth);
+  const isEligible = isEligibleForLongTermCareInsurance(dateOfBirth);
 
   for (const remuneration of monthlyRemunerations) {
     if (totalEarnings >= remuneration.remunerationStartSalary && totalEarnings < remuneration.remunerationEndSalary) {
@@ -59,7 +59,7 @@ export const calculateInsuranceDeductions = async (totalEarnings: number, dateOf
         pensionEndMonthlySalary,
         employeePensionPercentage
       );
-      if (age > 40) {
+      if (isEligible) {
         longTermCareInsurance = calculateLongTermCareInsurance(remuneration.monthlySalary, longTermInsurancePercentage);
       };
       break;
