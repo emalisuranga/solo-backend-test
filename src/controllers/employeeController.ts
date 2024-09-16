@@ -6,7 +6,8 @@ import {
     updateEmployee,
     deleteEmployee,
     getEmployeeNamesAndIds,
-    softDeleteEmployee
+    softDeleteEmployee,
+    getNextEmployeeNumber
 } from '../models/employee';
 import { Employee } from '../types/employee';
 import { sendSuccessResponse, handleErrorResponse } from '../utils/responseHandler';
@@ -83,6 +84,16 @@ export const softDeleteEmployeeHandler = async (req: Request, res: Response) => 
         const id = parseInt(req.params.id, 10);
         const employee = await softDeleteEmployee(id);
         sendSuccessResponse(res, employee, 'Employee soft deleted successfully');
+    } catch (error) {
+        console.error('Error details:', error);
+        handleErrorResponse(error, res);
+    }
+};
+
+export const getNextEmployeeNumberHandler = async (req: Request, res: Response) => {
+    try {
+        const nextEmployeeNumber = await getNextEmployeeNumber();
+        sendSuccessResponse(res, { nextEmployeeNumber }, 'Next employee number fetched successfully');
     } catch (error) {
         console.error('Error details:', error);
         handleErrorResponse(error, res);
