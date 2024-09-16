@@ -237,3 +237,18 @@ export const getEmployeeNamesAndIds = async () => {
   employees.sort((a, b) => Number(a.employeeNumber) - Number(b.employeeNumber));
   return employees;
 };
+
+export const getNextEmployeeNumber = async (): Promise<number> => {
+  const lastEmployee = await prisma.personalInfo.findFirst({
+    orderBy: {
+      employeeNumber: 'desc'
+    },
+    select: {
+      employeeNumber: true
+    }
+  });
+
+  const nextEmployeeNumber = lastEmployee ? parseInt(lastEmployee.employeeNumber) + 1 : 1;
+  
+  return nextEmployeeNumber;
+};

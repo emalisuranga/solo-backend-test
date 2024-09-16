@@ -6,14 +6,20 @@ import {
     getEmployeeByIdHandler,
     deleteEmployeeHandler,
     getEmployeeNamesAndIdsHandler,
-    softDeleteEmployeeHandler
+    softDeleteEmployeeHandler,
+    getNextEmployeeNumberHandler
 } from '../controllers/employeeController';
 
 const router = Router();
 
+// Specific routes should come before dynamic ones
+router.get('/next-employee-number', getNextEmployeeNumberHandler);
+router.get('/employee-names-ids', getEmployeeNamesAndIdsHandler);
+
 router.post('/save', createEmployeeHandler);
 router.get('/', getAllEmployeesHandler);
-router.get('/employee-names-ids', getEmployeeNamesAndIdsHandler);
+
+// Dynamic routes should be after specific ones
 router.get('/:id', getEmployeeByIdHandler);
 router.put('/:id', updateEmployeeHandler);
 router.delete('/:id', deleteEmployeeHandler);
