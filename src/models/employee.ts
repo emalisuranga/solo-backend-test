@@ -5,41 +5,78 @@ import { NotFoundError } from '../errors/customError';
 import { calculateRemainingPaidVacationDays } from '../utils/leaveCalculations';
 import { checkRelatedRecordsExist, updatePaidHolidaysIfNecessary } from '../helpers/employeeHelpers';
 
+const prepareEmployeeData = (employee: Employee) => {
+  const {
+    joinDate: { value: joinDateValue },
+    dateOfBirth: { value: dateOfBirthValue },
+    spouseDeduction: { value: spouseDeductionValue },
+    dependentDeduction: { value: dependentDeductionValue },
+    basicSalary: { value: basicSalaryValue },
+    transportationCosts: { value: transportationCostsValue },
+    familyAllowance: { value: familyAllowanceValue },
+    attendanceAllowance: { value: attendanceAllowanceValue },
+    leaveAllowance: { value: leaveAllowanceValue },
+    specialAllowance: { value: specialAllowanceValue },
+    bankAccountNumber: { value: bankAccountNumberValue },
+    bankName: { value: bankNameValue },
+    branchCode: { value: branchCodeValue },
+    firstName: { value: firstNameValue },
+    lastName: { value: lastNameValue },
+    furiganaFirstName: { value: furiganaFirstNameValue },
+    furiganaLastName: { value: furiganaLastNameValue },
+    phone: { value: phoneValue },
+    address: { value: addressValue },
+    department: { value: departmentValue },
+    jobTitle: { value: jobTitleValue },
+    employeeNumber: { value: employeeNumberValue },
+    ...otherDetails
+  } = employee;
+
+  const parsedJoinDate = new Date(joinDateValue);
+  const parsedDateOfBirth = new Date(dateOfBirthValue);
+
+  return {
+    employeeData: {
+      employeeNumber: String(employeeNumberValue),
+      firstName: firstNameValue,
+      lastName: lastNameValue,
+      furiganaFirstName: furiganaFirstNameValue,
+      furiganaLastName: furiganaLastNameValue,
+      phone: phoneValue,
+      address: addressValue,
+      dateOfBirth: parsedDateOfBirth,
+      joinDate: parsedJoinDate,
+      department: departmentValue,
+      jobTitle: jobTitleValue,
+      spouseDeduction: spouseDeductionValue,
+      dependentDeduction: dependentDeductionValue,
+    },
+    bankDetailsData: {
+      bankAccountNumber: bankAccountNumberValue,
+      bankName: bankNameValue,
+      branchCode: branchCodeValue,
+    },
+    salaryDetailsData: {
+      basicSalary: parseFloat(basicSalaryValue),
+      transportationCosts: parseFloat(transportationCostsValue),
+      familyAllowance: parseFloat(familyAllowanceValue),
+      attendanceAllowance: parseFloat(attendanceAllowanceValue),
+      leaveAllowance: parseFloat(leaveAllowanceValue),
+      specialAllowance: parseFloat(specialAllowanceValue),
+    },
+  };
+};
+
 export const createEmployee = async (employee: Employee) => {
+  const { employeeData, bankDetailsData, salaryDetailsData } = prepareEmployeeData(employee);
+
   const result = await prisma.personalInfo.create({
     data: {
-      employeeNumber: employee.employeeNumber,
-      firstName: employee.firstName,
-      lastName: employee.lastName,
-      furiganaFirstName: employee.furiganaFirstName,
-      furiganaLastName: employee.furiganaLastName,
-      phone: employee.phone,
-      address: employee.address,
-      dateOfBirth: new Date(employee.dateOfBirth),
-      joinDate: new Date(employee.joinDate),
-      department: employee.department,
-      jobTitle: employee.jobTitle,
-      spouseDeduction: parseFloat(employee.spouseDeduction as unknown as string),
-      dependentDeduction: parseFloat(employee.dependentDeduction as unknown as string),
-      isDeleted: false,
-      bankDetails: {
-        create: {
-          bankAccountNumber: employee.bankAccountNumber,
-          bankName: employee.bankName,
-          branchCode: employee.branchCode,
-        },
-      },
-      salaryDetails: {
-        create: {
-          basicSalary: parseFloat(employee.basicSalary as unknown as string),
-          transportationCosts: parseFloat(employee.transportationCosts as unknown as string),
-          familyAllowance: parseFloat(employee.familyAllowance as unknown as string),
-          attendanceAllowance: parseFloat(employee.attendanceAllowance as unknown as string),
-          leaveAllowance: parseFloat(employee.leaveAllowance as unknown as string),
-          specialAllowance: parseFloat(employee.specialAllowance as unknown as string),
-        },
-      },
+      ...employeeData,
+      bankDetails: { create: { ...bankDetailsData } },
+      salaryDetails: { create: { ...salaryDetailsData } },
     },
+    include: { salaryDetails: true, bankDetails: true },
   });
 
   await checkAndUpdateLeaveValidity(result.id);
@@ -130,60 +167,46 @@ export const getEmployeeById = async (id: number) => {
 };
 
 export const updateEmployee = async (id: number, employee: Employee) => {
+  try {
+    // // Force an error for testing purposes
+    // throw new Error('Forced error for testing');
 
-  await checkRelatedRecordsExist(id);
-  const existingEmployee = await prisma.personalInfo.findUnique({
-    where: { id, isDeleted: false },
-  });
+    await checkRelatedRecordsExist(id);
 
-  if (!existingEmployee) {
-    throw new NotFoundError(`Employee with ID ${id} does not exist.`);
-  }
+    const existingEmployee = await prisma.personalInfo.findUnique({
+      where: { id, isDeleted: false },
+    });
 
-  const { joinDate, dateOfBirth, ...otherDetails } = employee;
+    if (!existingEmployee) {
+      throw new NotFoundError(`Employee with ID ${id} does not exist.`);
+    }
 
-  if (joinDate && new Date(joinDate).getTime() !== existingEmployee.joinDate.getTime()) {
-    await updatePaidHolidaysIfNecessary(id, new Date(joinDate));
-  }
+    const { employeeData, bankDetailsData, salaryDetailsData } = prepareEmployeeData(employee);
 
-  const result = await prisma.personalInfo.update({
-    where: { id },
-    data: {
-      employeeNumber: employee.employeeNumber,
-      firstName: employee.firstName,
-      lastName: employee.lastName,
-      furiganaFirstName: employee.furiganaFirstName,
-      furiganaLastName: employee.furiganaLastName,
-      phone: employee.phone,
-      address: employee.address,
-      dateOfBirth: new Date(employee.dateOfBirth),
-      joinDate: new Date(employee.joinDate),
-      department: employee.department,
-      jobTitle: employee.jobTitle,
-      spouseDeduction: parseFloat(employee.spouseDeduction as unknown as string),
-      dependentDeduction: parseFloat(employee.dependentDeduction as unknown as string),
-      bankDetails: {
-        update: {
-          bankAccountNumber: employee.bankAccountNumber,
-          bankName: employee.bankName,
-          branchCode: employee.branchCode,
+    // Only update paid holidays if the join date has changed
+    if (employeeData.joinDate.getTime() !== existingEmployee.joinDate.getTime()) {
+      await updatePaidHolidaysIfNecessary(id, employeeData.joinDate);
+    }
+
+    const result = await prisma.personalInfo.update({
+      where: { id },
+      data: {
+        ...employeeData,
+        bankDetails: {
+          update: { ...bankDetailsData },
+        },
+        salaryDetails: {
+          update: { ...salaryDetailsData },
         },
       },
-      salaryDetails: {
-        update: {
-          basicSalary: parseFloat(employee.basicSalary as unknown as string),
-          transportationCosts: parseFloat(employee.transportationCosts as unknown as string),
-          familyAllowance: parseFloat(employee.familyAllowance as unknown as string),
-          attendanceAllowance: parseFloat(employee.attendanceAllowance as unknown as string),
-          leaveAllowance: parseFloat(employee.leaveAllowance as unknown as string),
-          specialAllowance: parseFloat(employee.specialAllowance as unknown as string),
-        },
-      },
-    },
-    include: { salaryDetails: true, bankDetails: true },
-  });
+      include: { salaryDetails: true, bankDetails: true },
+    });
 
-  return result;
+    return result;
+  } catch (error) {
+    console.error(`Error updating employee with ID ${id}:`, error);
+    throw new Error('An error occurred while updating the employee.');
+  }
 };
 
 export const deleteEmployee = async (id: number) => {
@@ -217,7 +240,7 @@ export const softDeleteEmployee = async (id: number) => {
     where: { id },
     data: {
       isDeleted: true,
-      employeeNumber: employee.employeeNumber + '_deleted', 
+      employeeNumber: employee.employeeNumber + '_deleted',
     },
   });
 
@@ -249,6 +272,6 @@ export const getNextEmployeeNumber = async (): Promise<number> => {
   });
 
   const nextEmployeeNumber = lastEmployee ? parseInt(lastEmployee.employeeNumber) + 1 : 1;
-  
+
   return nextEmployeeNumber;
 };
