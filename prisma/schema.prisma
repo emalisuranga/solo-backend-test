@@ -3,9 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+enum EmployeeCategory {
+  EXECUTIVE
+  NON_EXECUTIVE
 }
 
 model PersonalInfo {
@@ -26,6 +30,7 @@ model PersonalInfo {
   updatedAt          DateTime         @default(now()) @updatedAt
   spouseDeduction    Int              @default(0)
   dependentDeduction Int              @default(0)
+  category           EmployeeCategory @default(NON_EXECUTIVE)
   bankDetails        BankDetails?
   salaryDetails      SalaryDetails?
   paymentDetails     PaymentDetails[]
