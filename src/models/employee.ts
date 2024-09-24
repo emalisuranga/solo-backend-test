@@ -48,8 +48,8 @@ const prepareEmployeeData = (employee: Employee) => {
       joinDate: parsedJoinDate,
       department: departmentValue,
       jobTitle: jobTitleValue,
-      spouseDeduction: spouseDeductionValue,
-      dependentDeduction: dependentDeductionValue,
+      spouseDeduction: Number(spouseDeductionValue),
+      dependentDeduction: Number(dependentDeductionValue),
     },
     bankDetailsData: {
       bankAccountNumber: bankAccountNumberValue,
@@ -262,16 +262,25 @@ export const getEmployeeNamesAndIds = async () => {
 };
 
 export const getNextEmployeeNumber = async (): Promise<number> => {
-  const lastEmployee = await prisma.personalInfo.findFirst({
-    orderBy: {
-      employeeNumber: 'desc'
-    },
+  const employees = await prisma.personalInfo.findMany({
     select: {
-      employeeNumber: true
-    }
+      employeeNumber: true,
+    },
   });
 
-  const nextEmployeeNumber = lastEmployee ? parseInt(lastEmployee.employeeNumber) + 1 : 1;
+  if (employees.length === 0) {
+    return 1;
+  }
 
-  return nextEmployeeNumber;
+  const numericEmployeeNumbers = employees
+    .map(emp => emp.employeeNumber)
+    .filter(employeeNumber => /^\d+$/.test(employeeNumber)) 
+    .map(employeeNumber => parseInt(employeeNumber, 10));
+
+  if (numericEmployeeNumbers.length === 0) {
+    return 1;
+  }
+
+  const maxEmployeeNumber = Math.max(...numericEmployeeNumbers);
+  return maxEmployeeNumber + 1;
 };
