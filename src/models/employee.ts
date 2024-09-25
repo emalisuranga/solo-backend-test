@@ -29,6 +29,7 @@ const prepareEmployeeData = (employee: Employee) => {
     department: { value: departmentValue },
     jobTitle: { value: jobTitleValue },
     employeeNumber: { value: employeeNumberValue },
+    category: { value: categoryValue },
     ...otherDetails
   } = employee;
 
@@ -50,6 +51,7 @@ const prepareEmployeeData = (employee: Employee) => {
       jobTitle: jobTitleValue,
       spouseDeduction: Number(spouseDeductionValue),
       dependentDeduction: Number(dependentDeductionValue),
+      category: categoryValue,
     },
     bankDetailsData: {
       bankAccountNumber: bankAccountNumberValue,
@@ -71,7 +73,7 @@ export const createEmployee = async (employee: Employee) => {
   const { employeeData, bankDetailsData, salaryDetailsData } = prepareEmployeeData(employee);
 
   const result = await prisma.personalInfo.create({
-    data: {
+    data: { 
       ...employeeData,
       bankDetails: { create: { ...bankDetailsData } },
       salaryDetails: { create: { ...salaryDetailsData } },
@@ -129,6 +131,7 @@ export const getEmployeeById = async (id: number) => {
       jobTitle: true,
       spouseDeduction: true,
       dependentDeduction: true,
+      category: true,
       bankDetails: {
         select: {
           bankAccountNumber: true,
@@ -168,9 +171,6 @@ export const getEmployeeById = async (id: number) => {
 
 export const updateEmployee = async (id: number, employee: Employee) => {
   try {
-    // // Force an error for testing purposes
-    // throw new Error('Forced error for testing');
-
     await checkRelatedRecordsExist(id);
 
     const existingEmployee = await prisma.personalInfo.findUnique({
