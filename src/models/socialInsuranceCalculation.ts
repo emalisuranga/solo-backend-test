@@ -16,6 +16,7 @@ export const getSocialInsuranceCalculationDetails = async (): Promise<InsuranceC
 
   const insuranceCalculation = await prisma.socialInsuranceCalculation.findFirst({
     select: {
+      id: true,
       healthInsurancePercentage: true,
       longTermInsurancePercentage: true,
       employeePensionPercentage: true,
