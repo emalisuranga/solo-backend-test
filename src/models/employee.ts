@@ -284,3 +284,40 @@ export const getNextEmployeeNumber = async (): Promise<number> => {
   const maxEmployeeNumber = Math.max(...numericEmployeeNumbers);
   return maxEmployeeNumber + 1;
 };
+
+export const getAllDeletedEmployees = async () => {
+  const deletedEmployees = await prisma.personalInfo.findMany({
+    where: {
+      isDeleted: true,
+    },
+  });
+
+  if (!deletedEmployees || deletedEmployees.length === 0) {
+    throw new Error("No deleted employees found.");
+  }
+
+  return deletedEmployees;
+};
+
+export const undoDeleteEmployee = async (id: number) => {
+  const employee = await prisma.personalInfo.findUnique({
+    where: { id },
+  });
+
+  if (!employee) {
+    throw new Error("Employee not found.");
+  }
+
+  if (!employee.isDeleted) {
+    throw new Error("Employee is not deleted.");
+  }
+
+  const restoredEmployee = await prisma.personalInfo.update({
+    where: { id },
+    data: {
+      isDeleted: false,
+    },
+  });
+
+  return restoredEmployee;
+};

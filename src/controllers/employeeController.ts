@@ -7,7 +7,9 @@ import {
     deleteEmployee,
     getEmployeeNamesAndIds,
     softDeleteEmployee,
-    getNextEmployeeNumber
+    getNextEmployeeNumber,
+    getAllDeletedEmployees,
+    undoDeleteEmployee
 } from '../models/employee';
 import { Employee } from '../types/employee';
 import { sendSuccessResponse, handleErrorResponse } from '../utils/responseHandler';
@@ -96,6 +98,27 @@ export const getNextEmployeeNumberHandler = async (req: Request, res: Response) 
         sendSuccessResponse(res, { nextEmployeeNumber }, 'Next employee number fetched successfully');
     } catch (error) {
         console.error('Error details:', error);
+        handleErrorResponse(error, res);
+    }
+};
+
+export const getAllDeletedEmployeesHandler = async (req: Request, res: Response) => {
+    try {
+        const deletedEmployees = await getAllDeletedEmployees();
+        sendSuccessResponse(res, deletedEmployees, 'Deleted employees retrieved successfully');
+    } catch (error) {
+        console.error('Error details:', error);
+        handleErrorResponse(error, res);
+    }
+};
+
+export const undoDeleteEmployeeHandler = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params; // Get employee ID from request parameters
+        const restoredEmployee = await undoDeleteEmployee(Number(id)); // Convert ID to a number if it's passed as a string
+        sendSuccessResponse(res, restoredEmployee, 'Employee restored successfully');
+    } catch (error) {
+        console.error('Error restoring employee:', error);
         handleErrorResponse(error, res);
     }
 };
