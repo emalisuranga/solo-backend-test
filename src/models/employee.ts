@@ -29,6 +29,7 @@ const prepareEmployeeData = (employee: Employee) => {
     department: { value: departmentValue },
     jobTitle: { value: jobTitleValue },
     employeeNumber: { value: employeeNumberValue },
+    category: { value: categoryValue },
     ...otherDetails
   } = employee;
 
@@ -48,8 +49,9 @@ const prepareEmployeeData = (employee: Employee) => {
       joinDate: parsedJoinDate,
       department: departmentValue,
       jobTitle: jobTitleValue,
-      spouseDeduction: spouseDeductionValue,
-      dependentDeduction: dependentDeductionValue,
+      spouseDeduction: Number(spouseDeductionValue),
+      dependentDeduction: Number(dependentDeductionValue),
+      category: categoryValue,
     },
     bankDetailsData: {
       bankAccountNumber: bankAccountNumberValue,
@@ -71,7 +73,7 @@ export const createEmployee = async (employee: Employee) => {
   const { employeeData, bankDetailsData, salaryDetailsData } = prepareEmployeeData(employee);
 
   const result = await prisma.personalInfo.create({
-    data: {
+    data: { 
       ...employeeData,
       bankDetails: { create: { ...bankDetailsData } },
       salaryDetails: { create: { ...salaryDetailsData } },
@@ -129,6 +131,7 @@ export const getEmployeeById = async (id: number) => {
       jobTitle: true,
       spouseDeduction: true,
       dependentDeduction: true,
+      category: true,
       bankDetails: {
         select: {
           bankAccountNumber: true,
@@ -168,9 +171,6 @@ export const getEmployeeById = async (id: number) => {
 
 export const updateEmployee = async (id: number, employee: Employee) => {
   try {
-    // // Force an error for testing purposes
-    // throw new Error('Forced error for testing');
-
     await checkRelatedRecordsExist(id);
 
     const existingEmployee = await prisma.personalInfo.findUnique({
@@ -262,16 +262,62 @@ export const getEmployeeNamesAndIds = async () => {
 };
 
 export const getNextEmployeeNumber = async (): Promise<number> => {
-  const lastEmployee = await prisma.personalInfo.findFirst({
-    orderBy: {
-      employeeNumber: 'desc'
-    },
+  const employees = await prisma.personalInfo.findMany({
     select: {
-      employeeNumber: true
-    }
+      employeeNumber: true,
+    },
   });
 
-  const nextEmployeeNumber = lastEmployee ? parseInt(lastEmployee.employeeNumber) + 1 : 1;
+  if (employees.length === 0) {
+    return 1;
+  }
 
-  return nextEmployeeNumber;
+  const numericEmployeeNumbers = employees
+    .map(emp => emp.employeeNumber)
+    .filter(employeeNumber => /^\d+$/.test(employeeNumber)) 
+    .map(employeeNumber => parseInt(employeeNumber, 10));
+
+  if (numericEmployeeNumbers.length === 0) {
+    return 1;
+  }
+
+  const maxEmployeeNumber = Math.max(...numericEmployeeNumbers);
+  return maxEmployeeNumber + 1;
+};
+
+export const getAllDeletedEmployees = async () => {
+  const deletedEmployees = await prisma.personalInfo.findMany({
+    where: {
+      isDeleted: true,
+    },
+  });
+
+  if (!deletedEmployees || deletedEmployees.length === 0) {
+    throw new Error("No deleted employees found.");
+  }
+
+  return deletedEmployees;
+};
+
+export const undoDeleteEmployee = async (id: number) => {
+  const employee = await prisma.personalInfo.findUnique({
+    where: { id },
+  });
+
+  if (!employee) {
+    throw new Error("Employee not found.");
+  }
+
+  if (!employee.isDeleted) {
+    throw new Error("Employee is not deleted.");
+  }
+
+  const restoredEmployee = await prisma.personalInfo.update({
+    where: { id },
+    data: {
+      isDeleted: false,
+    },
+  });
+
+  return restoredEmployee;
 };

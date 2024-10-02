@@ -17,6 +17,7 @@ export const getSalarySlipDetails = async (employeeId: number, paymentDetailsId:
           lastName: true,
           department: true,
           jobTitle: true,
+          category: true,
           paidHolidays: {
             select: {
               remainingLeave: true,

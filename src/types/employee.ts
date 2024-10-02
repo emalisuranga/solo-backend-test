@@ -1,3 +1,8 @@
+enum EmployeeCategory {
+  EXECUTIVE = "EXECUTIVE",
+  NON_EXECUTIVE = "NON_EXECUTIVE",
+}
+
 export interface Employee {
   employeeNumber: { value: string };
   basicSalary: { value: string };
@@ -21,4 +26,5 @@ export interface Employee {
   jobTitle: { value: string };
   spouseDeduction: { value: number };
   dependentDeduction: { value: number };
+  category: { value: EmployeeCategory };
 }
