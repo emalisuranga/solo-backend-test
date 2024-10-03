@@ -240,7 +240,7 @@ export const softDeleteEmployee = async (id: number) => {
     where: { id },
     data: {
       isDeleted: true,
-      employeeNumber: employee.employeeNumber + '_deleted',
+      // employeeNumber: employee.employeeNumber + '_deleted',
     },
   });
 
