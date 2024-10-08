@@ -11,6 +11,8 @@ datasource db {
 enum EmployeeCategory {
   EXECUTIVE
   NON_EXECUTIVE
+  HOURLY_WORKER
+  DAILY_WORKER
 }
 
 model PersonalInfo {

@@ -4,6 +4,7 @@ import { checkAndUpdateLeaveValidity } from './leaveManagement';
 import { NotFoundError } from '../errors/customError';
 import { calculateRemainingPaidVacationDays } from '../utils/leaveCalculations';
 import { checkRelatedRecordsExist, updatePaidHolidaysIfNecessary } from '../helpers/employeeHelpers';
+import { EmployeeCategory } from '../types/employeeCategory.type';
 
 const prepareEmployeeData = (employee: Employee) => {
   const {
@@ -261,28 +262,51 @@ export const getEmployeeNamesAndIds = async () => {
   return employees;
 };
 
-export const getNextEmployeeNumber = async (): Promise<number> => {
-  const employees = await prisma.personalInfo.findMany({
-    select: {
-      employeeNumber: true,
-    },
-  });
+export const getNextEmployeeNumber = async (category: EmployeeCategory): Promise<string> => {
+  try {
+    // Determine the prefix based on the employee category
+    const prefixMap = {
+      [EmployeeCategory.HOURLY_WORKER]: 'HW',
+      [EmployeeCategory.DAILY_WORKER]: 'DW',
+      [EmployeeCategory.EXECUTIVE]: '',
+      [EmployeeCategory.NON_EXECUTIVE]: '',
+    };
+    const prefix = prefixMap[category] || '';
 
-  if (employees.length === 0) {
-    return 1;
+    // Get the maximum employee number with the given prefix
+    const employee = await prisma.personalInfo.findFirst({
+      select: { employeeNumber: true },
+      where: {
+        employeeNumber: {
+          startsWith: prefix,
+        },
+      },
+      orderBy: {
+        employeeNumber: 'desc', // Get the largest employee number
+      },
+      take: 1, // Only fetch the first result
+    });
+
+    // If no employees found, return the first employee number
+    if (!employee) {
+      return prefix ? `${prefix}1` : '1';
+    }
+
+    // Extract the numeric part of the employee number using regex
+    const numericPart = parseInt(employee.employeeNumber.replace(prefix, ''), 10);
+
+    // If the numeric part is not valid, start with 1
+    if (isNaN(numericPart)) {
+      return prefix ? `${prefix}1` : '1';
+    }
+
+    // Increment the numeric part and return the next employee number
+    return prefix ? `${prefix}${numericPart + 1}` : `${numericPart + 1}`;
+  } catch (error) {
+    // Handle any potential errors (e.g., database connection issues)
+    console.error('Error fetching employee number:', error);
+    throw new Error('Unable to generate the next employee number.');
   }
-
-  const numericEmployeeNumbers = employees
-    .map(emp => emp.employeeNumber)
-    .filter(employeeNumber => /^\d+$/.test(employeeNumber)) 
-    .map(employeeNumber => parseInt(employeeNumber, 10));
-
-  if (numericEmployeeNumbers.length === 0) {
-    return 1;
-  }
-
-  const maxEmployeeNumber = Math.max(...numericEmployeeNumbers);
-  return maxEmployeeNumber + 1;
 };
 
 export const getAllDeletedEmployees = async () => {

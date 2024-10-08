@@ -13,6 +13,7 @@ import {
 } from '../models/employee';
 import { Employee } from '../types/employee';
 import { sendSuccessResponse, handleErrorResponse } from '../utils/responseHandler';
+import { EmployeeCategory } from '../types/employeeCategory.type';
 
 export const createEmployeeHandler = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -94,7 +95,14 @@ export const softDeleteEmployeeHandler = async (req: Request, res: Response) => 
 
 export const getNextEmployeeNumberHandler = async (req: Request, res: Response) => {
     try {
-        const nextEmployeeNumber = await getNextEmployeeNumber();
+        const { employeeCategory } = req.params;
+        const category = EmployeeCategory[employeeCategory.toUpperCase() as keyof typeof EmployeeCategory];
+
+        // Check if the category is valid
+        if (!category) {
+          return res.status(400).json({ message: 'Invalid employee category' });
+        }
+        const nextEmployeeNumber = await getNextEmployeeNumber(category);
         sendSuccessResponse(res, { nextEmployeeNumber }, 'Next employee number fetched successfully');
     } catch (error) {
         console.error('Error details:', error);
