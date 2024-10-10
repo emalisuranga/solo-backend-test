@@ -264,16 +264,13 @@ export const getEmployeeNamesAndIds = async () => {
 
 export const getNextEmployeeNumber = async (category: EmployeeCategory): Promise<string> => {
   try {
-    // Determine the prefix based on the employee category
     const prefixMap = {
-      [EmployeeCategory.HOURLY_WORKER]: 'HW',
-      [EmployeeCategory.DAILY_WORKER]: 'DW',
-      [EmployeeCategory.EXECUTIVE]: '',
-      [EmployeeCategory.NON_EXECUTIVE]: '',
+      [EmployeeCategory.HOURLY_BASIC]: 'HW',
+      [EmployeeCategory.DAILY_BASIC]: 'DW',
+      [EmployeeCategory.MONTHLY_BASIC]: '',
     };
     const prefix = prefixMap[category] || '';
 
-    // Get the maximum employee number with the given prefix
     const employee = await prisma.personalInfo.findFirst({
       select: { employeeNumber: true },
       where: {
@@ -282,28 +279,23 @@ export const getNextEmployeeNumber = async (category: EmployeeCategory): Promise
         },
       },
       orderBy: {
-        employeeNumber: 'desc', // Get the largest employee number
+        employeeNumber: 'desc', 
       },
-      take: 1, // Only fetch the first result
+      take: 1, 
     });
 
-    // If no employees found, return the first employee number
     if (!employee) {
       return prefix ? `${prefix}1` : '1';
     }
 
-    // Extract the numeric part of the employee number using regex
     const numericPart = parseInt(employee.employeeNumber.replace(prefix, ''), 10);
 
-    // If the numeric part is not valid, start with 1
     if (isNaN(numericPart)) {
       return prefix ? `${prefix}1` : '1';
     }
 
-    // Increment the numeric part and return the next employee number
     return prefix ? `${prefix}${numericPart + 1}` : `${numericPart + 1}`;
   } catch (error) {
-    // Handle any potential errors (e.g., database connection issues)
     console.error('Error fetching employee number:', error);
     throw new Error('Unable to generate the next employee number.');
   }
