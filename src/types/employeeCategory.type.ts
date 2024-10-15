@@ -1,5 +1,10 @@
 export enum EmployeeCategory {
-  MONTHLY_BASIC = 'MONTHLY_BASIC',
-  HOURLY_BASIC = 'HOURLY_BASIC',
-  DAILY_BASIC = 'DAILY_BASIC'
+  MONTHLY_BASIC,
+  DAILY_BASIC,
+  HOURLY_BASIC,
+}
+
+export enum EmployeeSubcategory {
+  NON_EXECUTIVE,
+  EXECUTIVE
 }

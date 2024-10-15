@@ -16,7 +16,7 @@ const router = Router();
 
 // Specific routes should come before dynamic ones
 router.get('/next-employee-number/:employeeCategory', getNextEmployeeNumberHandler);
-router.get('/employee-names-ids', getEmployeeNamesAndIdsHandler);
+router.get('/employee-names-ids/:employeeCategory', getEmployeeNamesAndIdsHandler);
 router.get('/deleted-employees', getAllDeletedEmployeesHandler);
 
 router.post('/save', createEmployeeHandler);

@@ -13,7 +13,7 @@ import {
 } from '../models/employee';
 import { Employee } from '../types/employee';
 import { sendSuccessResponse, handleErrorResponse } from '../utils/responseHandler';
-import { EmployeeCategory } from '../types/employeeCategory.type';
+import { validateEmployeeCategory } from '../utils/validateEmployeeCategory';
 
 export const createEmployeeHandler = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -72,9 +72,12 @@ export const deleteEmployeeHandler = async (req: Request, res: Response) => {
     }
 };
 
-export const getEmployeeNamesAndIdsHandler = async (_req: Request, res: Response) => {
+export const getEmployeeNamesAndIdsHandler = async ( req: Request, res: Response) => {
     try {
-        const result = await getEmployeeNamesAndIds();
+        const { employeeCategory } = req.params;
+        const category = validateEmployeeCategory(employeeCategory, res);
+        if (!category) return;
+        const result = await getEmployeeNamesAndIds(category);
         sendSuccessResponse(res, result, 'Employees retrieved successfully');
     } catch (error) {
         console.error('Error details:', error);
@@ -96,12 +99,8 @@ export const softDeleteEmployeeHandler = async (req: Request, res: Response) => 
 export const getNextEmployeeNumberHandler = async (req: Request, res: Response) => {
     try {
         const { employeeCategory } = req.params;
-        const category = EmployeeCategory[employeeCategory.toUpperCase() as keyof typeof EmployeeCategory];
-
-        // Check if the category is valid
-        if (!category) {
-          return res.status(400).json({ message: 'Invalid employee category' });
-        }
+        const category = validateEmployeeCategory(employeeCategory, res);
+        if (!category) return;
         const nextEmployeeNumber = await getNextEmployeeNumber(category);
         sendSuccessResponse(res, { nextEmployeeNumber }, 'Next employee number fetched successfully');
     } catch (error) {

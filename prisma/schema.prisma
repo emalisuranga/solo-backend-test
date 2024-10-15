@@ -3,20 +3,24 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 enum EmployeeCategory {
-  EXECUTIVE
+  MONTHLY_BASIC
+  DAILY_BASIC
+  HOURLY_BASIC
+}
+
+enum EmployeeSubcategory {
   NON_EXECUTIVE
-  HOURLY_WORKER
-  DAILY_WORKER
+  EXECUTIVE
 }
 
 model PersonalInfo {
-  id                 Int              @id @default(autoincrement())
+  id                 Int                  @id @default(autoincrement())
   employeeNumber     String
   firstName          String
   lastName           String
@@ -27,19 +31,19 @@ model PersonalInfo {
   dateOfBirth        DateTime
   joinDate           DateTime
   department         String
-  jobTitle           String           @default("")
-  isDeleted          Boolean          @default(false)
-  createdAt          DateTime         @default(now()) @updatedAt
-  updatedAt          DateTime         @default(now()) @updatedAt
-  spouseDeduction    Int              @default(0)
-  dependentDeduction Int              @default(0)
-  category           EmployeeCategory @default(NON_EXECUTIVE)
+  jobTitle           String               @default("")
+  isDeleted          Boolean              @default(false)
+  createdAt          DateTime             @default(now()) @updatedAt
+  updatedAt          DateTime             @default(now()) @updatedAt
+  spouseDeduction    Int                  @default(0)
+  dependentDeduction Int                  @default(0)
+  category           EmployeeCategory     @default(MONTHLY_BASIC)
+  subcategory        EmployeeSubcategory?
   bankDetails        BankDetails?
   salaryDetails      SalaryDetails?
   paymentDetails     PaymentDetails[]
   paidHolidays       PaidHolidays[]
   LeaveRequests      LeaveRequests[]
-
 }
 
 model BankDetails {

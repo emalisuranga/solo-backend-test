@@ -1,7 +1,4 @@
-enum EmployeeCategory {
-  EXECUTIVE = "EXECUTIVE",
-  NON_EXECUTIVE = "NON_EXECUTIVE",
-}
+import {  EmployeeCategory, EmployeeSubcategory } from '@prisma/client';
 
 export interface Employee {
   employeeNumber: { value: string };
@@ -27,4 +24,5 @@ export interface Employee {
   spouseDeduction: { value: number };
   dependentDeduction: { value: number };
   category: { value: EmployeeCategory };
+  subcategory: { value: EmployeeSubcategory };
 }
