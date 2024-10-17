@@ -13,7 +13,6 @@ import {
 
 export const calculateSalaryDetails = async (salary: Salary) => {
     const dateOfBirthISO = formatToISOString(salary.dateOfBirth);
-    // const totalEarnings = calculateTotalEarnings(salary.earnings , salary.deductions.nonEmploymentDeduction);
     const totalEarnings = calculateTotalEarnings(salary.earnings , salary.deductions.nonEmploymentDeduction, salary.workDetails.numberOfWorkingDays, salary.category);	
     // Check if earnings match existing records
     if (!await checkEarningsMatch(totalEarnings, salary.id)) {
