@@ -4,6 +4,7 @@ export interface Salary {
   month: number;
   year: number;
   slipName: string,
+  category: string;
   dateOfBirth: Date;
   workDetails: WorkDetails;
   earnings: Earnings;

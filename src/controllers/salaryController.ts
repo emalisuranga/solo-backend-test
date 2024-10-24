@@ -89,9 +89,9 @@ export const calculateSalaryDetailsHandler = async (req: Request, res: Response)
 
 export const calculateIncomeTaxHandler = async (req: Request, res: Response) => {
     try {
-        const { earnings, nonEmploymentDeduction, socialInsurance, employeeId } = req.body;
+        const { earnings, nonEmploymentDeduction, socialInsurance, employeeId, category, numberOfWorkingDays } = req.body;
 
-        const { taxableIncome, socialInsuranceAmount }  = calculateTaxableIncome(earnings, nonEmploymentDeduction, socialInsurance);
+        const { taxableIncome, socialInsuranceAmount }  = calculateTaxableIncome(earnings, nonEmploymentDeduction, socialInsurance, category, numberOfWorkingDays);
         const incomeTax = await calculateIncomeTax(taxableIncome, employeeId);
 
         const responseData = {

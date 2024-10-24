@@ -13,6 +13,7 @@ import {
 } from '../models/employee';
 import { Employee } from '../types/employee';
 import { sendSuccessResponse, handleErrorResponse } from '../utils/responseHandler';
+import { validateEmployeeCategory } from '../utils/validateEmployeeCategory';
 
 export const createEmployeeHandler = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -71,9 +72,12 @@ export const deleteEmployeeHandler = async (req: Request, res: Response) => {
     }
 };
 
-export const getEmployeeNamesAndIdsHandler = async (_req: Request, res: Response) => {
+export const getEmployeeNamesAndIdsHandler = async ( req: Request, res: Response) => {
     try {
-        const result = await getEmployeeNamesAndIds();
+        const { employeeCategory } = req.params;
+        const category = validateEmployeeCategory(employeeCategory, res);
+        if (!category) return;
+        const result = await getEmployeeNamesAndIds(category);
         sendSuccessResponse(res, result, 'Employees retrieved successfully');
     } catch (error) {
         console.error('Error details:', error);
@@ -94,7 +98,10 @@ export const softDeleteEmployeeHandler = async (req: Request, res: Response) => 
 
 export const getNextEmployeeNumberHandler = async (req: Request, res: Response) => {
     try {
-        const nextEmployeeNumber = await getNextEmployeeNumber();
+        const { employeeCategory } = req.params;
+        const category = validateEmployeeCategory(employeeCategory, res);
+        if (!category) return;
+        const nextEmployeeNumber = await getNextEmployeeNumber(category);
         sendSuccessResponse(res, { nextEmployeeNumber }, 'Next employee number fetched successfully');
     } catch (error) {
         console.error('Error details:', error);

@@ -1,4 +1,5 @@
 import prisma from '../config/prismaClient';
+import {  EmployeeCategory } from '@prisma/client';
 import { Employee } from '../types/employee';
 import { checkAndUpdateLeaveValidity } from './leaveManagement';
 import { NotFoundError } from '../errors/customError';
@@ -30,6 +31,7 @@ const prepareEmployeeData = (employee: Employee) => {
     jobTitle: { value: jobTitleValue },
     employeeNumber: { value: employeeNumberValue },
     category: { value: categoryValue },
+    subcategory: { value: subcategoryValue },
     ...otherDetails
   } = employee;
 
@@ -51,7 +53,8 @@ const prepareEmployeeData = (employee: Employee) => {
       jobTitle: jobTitleValue,
       spouseDeduction: Number(spouseDeductionValue),
       dependentDeduction: Number(dependentDeductionValue),
-      category: categoryValue,
+      category: categoryValue || undefined,
+      subcategory: subcategoryValue,
     },
     bankDetailsData: {
       bankAccountNumber: bankAccountNumberValue,
@@ -97,6 +100,8 @@ export const getAllEmployees = async () => {
       phone: true,
       joinDate: true,
       department: true,
+      category: true,
+      subcategory: true,
       salaryDetails: {
         select: {
           basicSalary: true,
@@ -132,6 +137,7 @@ export const getEmployeeById = async (id: number) => {
       spouseDeduction: true,
       dependentDeduction: true,
       category: true,
+      subcategory: true,
       bankDetails: {
         select: {
           bankAccountNumber: true,
@@ -247,9 +253,12 @@ export const softDeleteEmployee = async (id: number) => {
   return updatedEmployee;
 };
 
-export const getEmployeeNamesAndIds = async () => {
+export const getEmployeeNamesAndIds = async (employeeCategory: EmployeeCategory) => {
+  console.log(employeeCategory);
   const employees = await prisma.personalInfo.findMany({
-    where: { isDeleted: false },
+    where: { isDeleted: false,
+      category: employeeCategory
+     },
     select: {
       id: true,
       employeeNumber: true,
@@ -261,28 +270,72 @@ export const getEmployeeNamesAndIds = async () => {
   return employees;
 };
 
-export const getNextEmployeeNumber = async (): Promise<number> => {
-  const employees = await prisma.personalInfo.findMany({
-    select: {
-      employeeNumber: true,
-    },
-  });
+// export const getEmployeeNamesAndIds = async (category: EmployeeCategory) => {
+//   console.log(category);
+//   let whereCondition: any = { isDeleted: false }; 
 
-  if (employees.length === 0) {
-    return 1;
+//   if (category === EmployeeCategory.MONTHLY_BASIC) {
+//     whereCondition.category = {
+//       in: [EmployeeCategory.EXECUTIVE, EmployeeCategory.NON_EXECUTIVE],
+//     };
+//   } else if (category === EmployeeCategory.HOURLY_BASIC || category === EmployeeCategory.DAILY_BASIC) {
+//     whereCondition.category = category; 
+//   }
+
+//   // Fetch the employees based on the condition
+//   const employees = await prisma.personalInfo.findMany({
+//     where: whereCondition,
+//     select: {
+//       id: true,
+//       employeeNumber: true,
+//       firstName: true,
+//       lastName: true,
+//     },
+//   });
+
+//   // Sort the employees by employeeNumber
+//   employees.sort((a, b) => Number(a.employeeNumber) - Number(b.employeeNumber));
+
+//   return employees;
+// };
+
+export const getNextEmployeeNumber = async (category: EmployeeCategory): Promise<string> => {
+  try {
+    const prefixMap = {
+      [EmployeeCategory.HOURLY_BASIC]: 'HW',
+      [EmployeeCategory.DAILY_BASIC]: 'DW',
+      [EmployeeCategory.MONTHLY_BASIC]: '',
+    };
+    const prefix = prefixMap[category] || '';
+
+    const employee = await prisma.personalInfo.findFirst({
+      select: { employeeNumber: true },
+      where: {
+        employeeNumber: {
+          startsWith: prefix,
+        },
+      },
+      orderBy: {
+        employeeNumber: 'desc', 
+      },
+      take: 1, 
+    });
+
+    if (!employee) {
+      return prefix ? `${prefix}1` : '1';
+    }
+
+    const numericPart = parseInt(employee.employeeNumber.replace(prefix, ''), 10);
+
+    if (isNaN(numericPart)) {
+      return prefix ? `${prefix}1` : '1';
+    }
+
+    return prefix ? `${prefix}${numericPart + 1}` : `${numericPart + 1}`;
+  } catch (error) {
+    console.error('Error fetching employee number:', error);
+    throw new Error('Unable to generate the next employee number.');
   }
-
-  const numericEmployeeNumbers = employees
-    .map(emp => emp.employeeNumber)
-    .filter(employeeNumber => /^\d+$/.test(employeeNumber)) 
-    .map(employeeNumber => parseInt(employeeNumber, 10));
-
-  if (numericEmployeeNumbers.length === 0) {
-    return 1;
-  }
-
-  const maxEmployeeNumber = Math.max(...numericEmployeeNumbers);
-  return maxEmployeeNumber + 1;
 };
 
 export const getAllDeletedEmployees = async () => {
@@ -291,10 +344,6 @@ export const getAllDeletedEmployees = async () => {
       isDeleted: true,
     },
   });
-
-  if (!deletedEmployees || deletedEmployees.length === 0) {
-    throw new Error("No deleted employees found.");
-  }
 
   return deletedEmployees;
 };

@@ -7,18 +7,20 @@ import { getSalaryDetailsByPaymentId } from '../models/salary';
  * @param overtimePayment - The overtime payment.
  * @returns The total earnings.
  */
-export const calculateTotalEarnings = (earnings: Salary['earnings'], nonEmploymentDeduction: number): number => {
-    return (
-        earnings.basicSalary +
-        earnings.transportationCosts +
-        earnings.attendanceAllowance +
-        earnings.familyAllowance +
-        earnings.leaveAllowance +
-        earnings.specialAllowance +
-        earnings.holidayAllowance +
-        earnings.overtimePay -
-        nonEmploymentDeduction
-    );
+export const calculateTotalEarnings = (earnings: Salary['earnings'], nonEmploymentDeduction: number, numberOfWorkingDays: number, category: string): number => {
+    const baseEarnings = calculateBaseEarnings(category, earnings.basicSalary, numberOfWorkingDays);
+
+  return (
+    baseEarnings +
+    earnings.transportationCosts +
+    earnings.attendanceAllowance +
+    earnings.familyAllowance +
+    earnings.leaveAllowance +
+    earnings.specialAllowance +
+    earnings.holidayAllowance +
+    earnings.overtimePay -
+    nonEmploymentDeduction
+  );
 };
 
 /**
@@ -68,8 +70,8 @@ export const convertToNegative = (value: number): number => {
     return -Math.abs(value);
 };
 
-export const calculateTaxableIncome = (earnings: Earnings, nonEmploymentDeduction: number, socialInsurance: socialInsurance): { taxableIncome: number; socialInsuranceAmount: number } => {
-    const totalEarnings = calculateTotalEarnings(earnings, nonEmploymentDeduction);
+export const calculateTaxableIncome = (earnings: Earnings, nonEmploymentDeduction: number, socialInsurance: socialInsurance, category: string, numberOfWorkingDays: number): { taxableIncome: number; socialInsuranceAmount: number } => {
+    const totalEarnings = calculateTotalEarnings(earnings, nonEmploymentDeduction, numberOfWorkingDays, category);
     const socialInsuranceAmount = calculateSocialInsurance(socialInsurance);
     const taxableIncome = totalEarnings - socialInsuranceAmount;
     return { taxableIncome, socialInsuranceAmount};
@@ -100,3 +102,19 @@ export const checkEarningsMatch = async (currentEarnings: number, paymentId: num
     salary.deductions.employeePensionInsurance = calculatedDetails.insuranceDeductions.employeePensionInsurance;
     salary.deductions.longTermCareInsurance = calculatedDetails.insuranceDeductions.longTermCareInsurance;
 };
+
+export const calculateBaseEarnings = (
+    category: string,
+    basicSalary: number,
+    numberOfWorkingDays: number
+  ): number => {
+    switch (category) {
+      case 'DAILY_BASIC':
+      case 'HOURLY_BASIC':
+        return basicSalary * numberOfWorkingDays;
+      case 'MONTHLY_BASIC':
+        return basicSalary;
+      default:
+        throw new Error(`Invalid category: ${category}`);
+    }
+  };

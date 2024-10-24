@@ -3,7 +3,7 @@ import { Salary } from '../types/salary';
 import { createInitialLeaveRequest, adjustLeaveRequest } from './leaveManagement';
 import { NotFoundError, BadRequestError } from '../errors/customError';
 import { logAudit } from '../utils/auditLog';
-import { calculateTotalEarnings, calculateTotalDeductions, convertToNegative } from '../helpers/salaryCalculations';
+import { calculateTotalEarnings, calculateTotalDeductions, convertToNegative, calculateBaseEarnings } from '../helpers/salaryCalculations';
 
 /**
  * Add salary details for an employee.
@@ -32,7 +32,7 @@ export const addSalaryDetails = async (salary: Salary) => {
         throw new BadRequestError(`Salary details for employee ${salary.employeeId} for month ${salary.month} and year ${salary.year} already exist.`);
     }
 
-    const totalEarnings = calculateTotalEarnings(salary.earnings, salary.deductions.nonEmploymentDeduction);
+    const totalEarnings = calculateTotalEarnings(salary.earnings, salary.deductions.nonEmploymentDeduction, salary.workDetails.numberOfWorkingDays, salary.category);
     const totalDeductions = calculateTotalDeductions({...salary.deductions, refundAmount: convertToNegative(salary.deductions.refundAmount)});
     const netSalary = totalEarnings - totalDeductions;
 
@@ -58,7 +58,8 @@ export const addSalaryDetails = async (salary: Salary) => {
             },
             earnings: {
                 create: {
-                    basicSalary: salary.earnings.basicSalary,
+                    // basicSalary: salary.earnings.basicSalary,
+                    basicSalary: calculateBaseEarnings(salary.category, salary.earnings.basicSalary, salary.workDetails.numberOfWorkingDays),
                     overtimePay: salary.earnings.overtimePay,
                     transportationCosts: salary.earnings.transportationCosts,
                     attendanceAllowance: salary.earnings.attendanceAllowance,
@@ -157,6 +158,12 @@ export const getSalaryDetailsByPaymentId = async (paymentId: number) => {
                         firstName: true,
                         lastName: true,
                         dateOfBirth: true,
+                        category: true,
+                        salaryDetails: { 
+                            select: {
+                              basicSalary: true,
+                            },
+                          },
                     },
                 },
             },
@@ -190,7 +197,7 @@ export const updateSalaryDetails = async (id: number, salary: Salary) => {
         throw new NotFoundError(`Salary details with ID ${id} do not exist.`);
     }
 
-    const totalEarnings = calculateTotalEarnings(salary.earnings, salary.deductions.nonEmploymentDeduction);
+    const totalEarnings = calculateTotalEarnings(salary.earnings, salary.deductions.nonEmploymentDeduction, salary.workDetails.numberOfWorkingDays, salary.category);
     const totalDeductions = calculateTotalDeductions({...salary.deductions, refundAmount: convertToNegative(salary.deductions.refundAmount)});
     const netSalary = totalEarnings - totalDeductions;
 
@@ -211,7 +218,7 @@ export const updateSalaryDetails = async (id: number, salary: Salary) => {
             },
             earnings: {
                 update: {
-                    basicSalary: salary.earnings.basicSalary,
+                    basicSalary: calculateBaseEarnings(salary.category, salary.earnings.basicSalary, salary.workDetails.numberOfWorkingDays),
                     overtimePay: salary.earnings.overtimePay,
                     transportationCosts: salary.earnings.transportationCosts,
                     attendanceAllowance: salary.earnings.attendanceAllowance,
