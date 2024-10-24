@@ -345,10 +345,6 @@ export const getAllDeletedEmployees = async () => {
     },
   });
 
-  if (!deletedEmployees || deletedEmployees.length === 0) {
-    throw new Error("No deleted employees found.");
-  }
-
   return deletedEmployees;
 };
 
