@@ -159,6 +159,11 @@ export const getSalaryDetailsByPaymentId = async (paymentId: number) => {
                         lastName: true,
                         dateOfBirth: true,
                         category: true,
+                        salaryDetails: { 
+                            select: {
+                              basicSalary: true,
+                            },
+                          },
                     },
                 },
             },
