@@ -31,10 +31,10 @@ const calculateFullSalaryDetails = async (salary: Salary, totalEarnings: number,
     const socialInsurance = calculateSocialInsurance({ ...insuranceDeductions, employmentInsurance });
     const taxableIncome = totalEarnings - socialInsurance;
     const incomeTax = await calculateIncomeTax(taxableIncome, salary.employeeId);
-    const refundAmount = calculateRefundAmount(salary.deductions.refundAmount, incomeTax);
+    // const refundAmount = calculateRefundAmount(salary.deductions.refundAmount, incomeTax);
     const totalDeductions = calculateTotalDeductions({
         ...salary.deductions,
-        refundAmount: convertToNegative(refundAmount),
+        refundAmount: convertToNegative(incomeTax),
         incomeTax,
         employmentInsurance,
     });
@@ -47,7 +47,7 @@ const calculateFullSalaryDetails = async (salary: Salary, totalEarnings: number,
         socialInsurance,
         taxableIncome,
         incomeTax,
-        refundAmount: convertToNegative(refundAmount),
+        refundAmount: convertToNegative(incomeTax),
         totalDeductions,
         netSalary,
         insuranceDeductions,

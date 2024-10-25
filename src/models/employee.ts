@@ -254,7 +254,6 @@ export const softDeleteEmployee = async (id: number) => {
 };
 
 export const getEmployeeNamesAndIds = async (employeeCategory: EmployeeCategory) => {
-  console.log(employeeCategory);
   const employees = await prisma.personalInfo.findMany({
     where: { isDeleted: false,
       category: employeeCategory
@@ -269,35 +268,6 @@ export const getEmployeeNamesAndIds = async (employeeCategory: EmployeeCategory)
   employees.sort((a, b) => Number(a.employeeNumber) - Number(b.employeeNumber));
   return employees;
 };
-
-// export const getEmployeeNamesAndIds = async (category: EmployeeCategory) => {
-//   console.log(category);
-//   let whereCondition: any = { isDeleted: false }; 
-
-//   if (category === EmployeeCategory.MONTHLY_BASIC) {
-//     whereCondition.category = {
-//       in: [EmployeeCategory.EXECUTIVE, EmployeeCategory.NON_EXECUTIVE],
-//     };
-//   } else if (category === EmployeeCategory.HOURLY_BASIC || category === EmployeeCategory.DAILY_BASIC) {
-//     whereCondition.category = category; 
-//   }
-
-//   // Fetch the employees based on the condition
-//   const employees = await prisma.personalInfo.findMany({
-//     where: whereCondition,
-//     select: {
-//       id: true,
-//       employeeNumber: true,
-//       firstName: true,
-//       lastName: true,
-//     },
-//   });
-
-//   // Sort the employees by employeeNumber
-//   employees.sort((a, b) => Number(a.employeeNumber) - Number(b.employeeNumber));
-
-//   return employees;
-// };
 
 export const getNextEmployeeNumber = async (category: EmployeeCategory): Promise<string> => {
   try {
