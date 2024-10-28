@@ -104,17 +104,22 @@ export const checkEarningsMatch = async (currentEarnings: number, paymentId: num
 };
 
 export const calculateBaseEarnings = (
-    category: string,
-    basicSalary: number,
-    numberOfWorkingDays: number
-  ): number => {
-    switch (category) {
-      case 'DAILY_BASIC':
-      case 'HOURLY_BASIC':
-        return basicSalary * numberOfWorkingDays;
-      case 'MONTHLY_BASIC':
-        return basicSalary;
-      default:
-        throw new Error(`Invalid category: ${category}`);
-    }
-  };
+  category: string,
+  basicSalary: number,
+  numberOfWorkingDays: number
+): number => {
+  let calculatedValue: number;
+
+  switch (category) {
+    case 'DAILY_BASIC':
+    case 'HOURLY_BASIC':
+      calculatedValue = basicSalary * numberOfWorkingDays;
+      break;
+    case 'MONTHLY_BASIC':
+      calculatedValue = basicSalary;
+      break;
+    default:
+      throw new Error(`Invalid category: ${category}`);
+  }
+  return Math.floor(calculatedValue) + (calculatedValue % 1 !== 0 ? 1 : 0);
+};

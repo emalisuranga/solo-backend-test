@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "WorkDetails" ALTER COLUMN "numberOfWorkingDays" SET DATA TYPE DOUBLE PRECISION;

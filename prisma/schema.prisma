@@ -92,7 +92,7 @@ model WorkDetails {
   paymentDetails               PaymentDetails @relation(fields: [paymentDetailsId], references: [id], onDelete: Cascade)
   paymentDetailsId             Int            @unique
   scheduledWorkingDays         Int
-  numberOfWorkingDays          Int
+  numberOfWorkingDays          Float
   numberOfPaidHolidays         Int
   remainingPaidVacationDays    Int
   overtime                     Float
