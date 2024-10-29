@@ -269,6 +269,49 @@ export const getEmployeeNamesAndIds = async (employeeCategory: EmployeeCategory)
   return employees;
 };
 
+// export const getNextEmployeeNumber = async (category: EmployeeCategory): Promise<string> => {
+//   console.log(category);
+//   try {
+//     const prefixMap = {
+//       [EmployeeCategory.HOURLY_BASIC]: 'HW',
+//       [EmployeeCategory.DAILY_BASIC]: 'DW',
+//       [EmployeeCategory.MONTHLY_BASIC]: '',
+//     };
+//     const prefix = prefixMap[category] || '';
+//     console.log(prefix);
+
+//     const employee = await prisma.personalInfo.findFirst({
+//       select: { employeeNumber: true },
+//       where: {
+//         employeeNumber: {
+//           startsWith: prefix,
+//         },
+//       },
+//       orderBy: {
+//         employeeNumber: 'desc', 
+//       },
+//       take: 1, 
+//     });
+
+//     console.log(employee);
+
+//     if (!employee) {
+//       return prefix ? `${prefix}1` : '1';
+//     }
+
+//     const numericPart = parseInt(employee.employeeNumber.replace(prefix, ''), 10);
+
+//     if (isNaN(numericPart)) {
+//       return prefix ? `${prefix}1` : '1';
+//     }
+
+//     return prefix ? `${prefix}${numericPart + 1}` : `${numericPart + 1}`;
+//   } catch (error) {
+//     console.error('Error fetching employee number:', error);
+//     throw new Error('Unable to generate the next employee number.');
+//   }
+// };
+
 export const getNextEmployeeNumber = async (category: EmployeeCategory): Promise<string> => {
   try {
     const prefixMap = {
@@ -278,18 +321,20 @@ export const getNextEmployeeNumber = async (category: EmployeeCategory): Promise
     };
     const prefix = prefixMap[category] || '';
 
-    const employee = await prisma.personalInfo.findFirst({
+    const employees = await prisma.personalInfo.findMany({
       select: { employeeNumber: true },
-      where: {
-        employeeNumber: {
-          startsWith: prefix,
-        },
-      },
       orderBy: {
-        employeeNumber: 'desc', 
+        employeeNumber: 'desc',
       },
-      take: 1, 
     });
+
+    const filteredEmployees = employees.filter(employee =>
+      prefix
+        ? employee.employeeNumber.startsWith(prefix) 
+        : !/^[A-Z]/.test(employee.employeeNumber)    
+    );
+
+    const employee = filteredEmployees.length > 0 ? filteredEmployees[0] : null;
 
     if (!employee) {
       return prefix ? `${prefix}1` : '1';
