@@ -322,13 +322,22 @@ export const getNextEmployeeNumber = async (category: EmployeeCategory): Promise
     const prefix = prefixMap[category] || '';
 
     const employees = await prisma.personalInfo.findMany({
+      where: {
+        employeeNumber: {
+          startsWith: prefix,
+        },
+      },
       select: { employeeNumber: true },
       orderBy: {
-        employeeNumber: 'desc',
+        employeeNumber: 'desc', 
       },
     });
 
-    const filteredEmployees = employees.filter(employee =>
+    const sortedEmployees = employees.sort(
+      (a, b) => parseInt(b.employeeNumber, 10) - parseInt(a.employeeNumber, 10)
+    );
+
+    const filteredEmployees = sortedEmployees.filter(employee =>
       prefix
         ? employee.employeeNumber.startsWith(prefix) 
         : !/^[A-Z]/.test(employee.employeeNumber)    
